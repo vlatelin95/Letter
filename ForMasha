@@ -1039,7 +1039,7 @@ local function moneyNo()
 	questionButtons.Visible = false
 	
 	setSecretText(
-		"Я прошу тебя зая, ты очень красивая и это самое лучшее, что ты можешь сделать для меня"
+		"Я прошу тебя зая, ты очень красивая💋"
 	)
 	
 	task.wait(3)
