@@ -902,12 +902,13 @@ end
 
 local function showImportantQuestion()
 	questionButtons.Visible = false
-	setSecretText("Хочешь сделать для меня кое-что? ❤️")
+	
+	setSecretText("Даш сотку?")
 	
 	task.wait(2)
 	
-	yesButton.Text = "Зделаешь?❤️🔥"
-	noButton.Text = "нет💔"
+	yesButton.Text = "Да ❤️🔥"
+	noButton.Text = "Нет 😔"
 	showQuestionButtons()
 end
 
@@ -1000,10 +1001,8 @@ local function createSadRain()
 	rainLayer:Destroy()
 end
 
-local function secondYes()
+local function finalYes()
 	questionButtons.Visible = false
-	
-	setSecretText("❤️❤️❤️❤️❤️")
 	
 	task.spawn(function()
 		loveFlash()
@@ -1014,7 +1013,7 @@ local function secondYes()
 	setSecretText("Я жду❤️❤️❤️❤️❤️❤️")
 end
 
-local function secondNo()
+local function finalNo()
 	questionButtons.Visible = false
 	
 	setSecretText("Жаль.....💔")
@@ -1024,11 +1023,39 @@ local function secondNo()
 	end)
 end
 
+local function moneyYes()
+	questionButtons.Visible = false
+	
+	task.spawn(function()
+		loveFlash()
+	end)
+	
+	task.wait(5)
+	
+	setSecretText("Я жду❤️❤️❤️❤️❤️❤️")
+end
+
+local function moneyNo()
+	questionButtons.Visible = false
+	
+	setSecretText(
+		"Я прошу тебя зая, ты очень красивая и это самое лучшее, что ты можешь сделать для меня"
+	)
+	
+	task.wait(3)
+	
+	yesButton.Text = "Зделаешь?❤️🔥"
+	noButton.Text = "нет💔"
+	showQuestionButtons()
+end
+
 yesButton.MouseButton1Click:Connect(function()
 	if yesButton.Text == "Да ❤️" then
 		showImportantQuestion()
+	elseif yesButton.Text == "Да ❤️🔥" then
+		moneyYes()
 	else
-		secondYes()
+		finalYes()
 	end
 end)
 
@@ -1038,13 +1065,16 @@ noButton.MouseButton1Click:Connect(function()
 		
 		setSecretText("Я прошу тебя зая, сделай это для меня ❤️")
 		
-		task.wait(2)
+		task.wait(3)
 		
 		yesButton.Text = "Зделаешь?❤️🔥"
 		noButton.Text = "нет💔"
 		showQuestionButtons()
+		
+	elseif noButton.Text == "Нет 😔" then
+		moneyNo()
 	else
-		secondNo()
+		finalNo()
 	end
 end)
 
@@ -1118,6 +1148,7 @@ local function showSecretMessage()
 	noButton.Text = "Нет"
 	showQuestionButtons()
 end
+	
 ------------------------------------------------------------
 -- 3D СЕРДЦА
 ------------------------------------------------------------
