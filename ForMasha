@@ -827,13 +827,101 @@ secretText.ZIndex = 101
 secretText.Parent = secretMessage
 
 ------------------------------------------------------------
--- ПОКАЗ СЕКРЕТНОГО СООБЩЕНИЯ
+-- ПОКАЗ СЕКРЕТНОЙ ЦЕПОЧКИ СООБЩЕНИЙ
 ------------------------------------------------------------
+
+local questionButtons = Instance.new("Frame")
+questionButtons.Size = UDim2.new(1, -105, 0, 42)
+questionButtons.Position = UDim2.new(0, 100, 0, 92)
+questionButtons.BackgroundTransparency = 1
+questionButtons.Visible = false
+questionButtons.ZIndex = 102
+questionButtons.Parent = secretMessage
+
+local yesButton = Instance.new("TextButton")
+yesButton.Size = UDim2.new(0.45, 0, 1, 0)
+yesButton.Position = UDim2.new(0, 0, 0, 0)
+yesButton.BackgroundColor3 = Color3.fromRGB(255, 130, 180)
+yesButton.BackgroundTransparency = 0.1
+yesButton.Text = "Да ❤️"
+yesButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+yesButton.TextSize = 16
+yesButton.Font = Enum.Font.GothamBold
+yesButton.ZIndex = 103
+yesButton.Parent = questionButtons
+
+local yesCorner = Instance.new("UICorner")
+yesCorner.CornerRadius = UDim.new(0, 12)
+yesCorner.Parent = yesButton
+
+local noButton = Instance.new("TextButton")
+noButton.Size = UDim2.new(0.45, 0, 1, 0)
+noButton.Position = UDim2.new(0.55, 0, 0, 0)
+noButton.BackgroundColor3 = Color3.fromRGB(65, 65, 80)
+noButton.BackgroundTransparency = 0.1
+noButton.Text = "Нет"
+noButton.TextColor3 = Color3.fromRGB(245, 245, 250)
+noButton.TextSize = 16
+noButton.Font = Enum.Font.GothamBold
+noButton.ZIndex = 103
+noButton.Parent = questionButtons
+
+local noCorner = Instance.new("UICorner")
+noCorner.CornerRadius = UDim.new(0, 12)
+noCorner.Parent = noButton
+
+local function setSecretText(text)
+	secretText.Text = text
+	secretText.TextTransparency = 1
+
+	TweenService:Create(
+		secretText,
+		TweenInfo.new(0.5),
+		{
+			TextTransparency = 0
+		}
+	):Play()
+end
+
+local function showQuestionButtons()
+	questionButtons.Visible = true
+	questionButtons.Size = UDim2.new(1, -105, 0, 0)
+
+	TweenService:Create(
+		questionButtons,
+		TweenInfo.new(
+			0.5,
+			Enum.EasingStyle.Back,
+			Enum.EasingDirection.Out
+		),
+		{
+			Size = UDim2.new(1, -105, 0, 42)
+		}
+	):Play()
+end
+
+local function showImportantQuestion()
+	questionButtons.Visible = false
+	setSecretText("Ты правда думала, что это конец? ❤️")
+end
+
+yesButton.MouseButton1Click:Connect(function()
+	showImportantQuestion()
+end)
+
+noButton.MouseButton1Click:Connect(function()
+	questionButtons.Visible = false
+
+	setSecretText("А я всё равно должен сказать.....")
+
+	task.wait(2)
+
+	showImportantQuestion()
+end)
 
 local function showSecretMessage()
 
 	secretMessage.Visible = true
-
 	secretMessage.Size = UDim2.new(0, 280, 0, 90)
 	secretMessage.Position = UDim2.new(0.5, -140, 0.62, 0)
 
@@ -845,8 +933,8 @@ local function showSecretMessage()
 			Enum.EasingDirection.Out
 		),
 		{
-			Size = UDim2.new(0, 330, 0, 105),
-			Position = UDim2.new(0.5, -165, 0.60, 0),
+			Size = UDim2.new(0, 330, 0, 145),
+			Position = UDim2.new(0.5, -165, 0.56, 0),
 			BackgroundTransparency = 0.08
 		}
 	):Play()
@@ -882,6 +970,22 @@ local function showSecretMessage()
 			TextTransparency = 0
 		}
 	):Play()
+
+	task.wait(3)
+
+	setSecretText("Нет конечно....")
+
+	task.wait(4)
+
+	setSecretText("Знаешь как я старался для тебя ❤️")
+
+	task.wait(5)
+
+	setSecretText("Можно задам тебе вопрос?")
+
+	task.wait(2)
+
+	showQuestionButtons()
 
 end
 ------------------------------------------------------------
@@ -1402,6 +1506,7 @@ local function openLetter()
 end
 
 ------------------------------------------------------------
+------------------------------------------------------------
 -- ЗАКРЫТИЕ ПИСЬМА + СЕКРЕТНЫЙ СЮРПРИЗ
 ------------------------------------------------------------
 
@@ -1409,43 +1514,49 @@ local secretSequenceStarted = false
 
 close.MouseButton1Click:Connect(function()
 
-	letter.Visible = false
-	smallEnvelope.Visible = true
+    letter.Visible = false
+    smallEnvelope.Visible = true
 
-	if secretSequenceStarted then
-		return
-	end
+    if secretSequenceStarted then
+        return
+    end
 
-	secretSequenceStarted = true
+    secretSequenceStarted = true
 
-	task.delay(15, function()
+    task.delay(15, function()
 
-		if not smallEnvelope.Visible then
-			return
-		end
+        TweenService:Create(
+            smallEnvelope,
+            TweenInfo.new(
+                0.8,
+                Enum.EasingStyle.Sine,
+                Enum.EasingDirection.Out
+            ),
+            {
+                BackgroundTransparency = 1,
+                TextTransparency = 1
+            }
+        ):Play()
 
-		TweenService:Create(
-			smallEnvelope,
-			TweenInfo.new(
-				0.8,
-				Enum.EasingStyle.Sine,
-				Enum.EasingDirection.Out
-			),
-			{
-				BackgroundTransparency = 1,
-				TextTransparency = 1
-			}
-		):Play()
+        if smallStroke then
+            TweenService:Create(
+                smallStroke,
+                TweenInfo.new(0.8),
+                {
+                    Transparency = 1
+                }
+            ):Play()
+        end
 
-		task.wait(0.8)
+        task.wait(0.8)
 
-		smallEnvelope.Visible = false
+        smallEnvelope.Visible = false
 
-		task.wait(5)
+        task.wait(5)
 
-		showSecretMessage()
+        showSecretMessage()
 
-	end)
+    end)
 
 end)
 
