@@ -903,7 +903,7 @@ end
 local function showImportantQuestion()
 	questionButtons.Visible = false
 	
-	setSecretText("Даш сотку?")
+	setSecretText("Скинь сиськи позязя👉👈?")
 	
 	task.wait(2)
 	
