@@ -600,7 +600,7 @@ message.Position =
 
 message.BackgroundTransparency = 1
 
-message.Text = "Я люблю тебя, Маша.🫂\nСпасибо тебе за всё ❤️\nЗакрой теперь письмо и насладись💋"
+message.Text = "Я люблю тебя, Маша.❤️\nСпасибо тебе за всё 🤗\nЗакрой теперь письмо и насладись💋"
 
 message.TextColor3 =
 	Color3.fromRGB(75, 45, 57)
