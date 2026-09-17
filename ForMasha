@@ -902,7 +902,7 @@ end
 
 local function showImportantQuestion()
 	questionButtons.Visible = false
-	setSecretText("За все старания, пожалуйста.. скинь ножки👉👈")
+	setSecretText("займи сотку❤️")
 end
 
 yesButton.MouseButton1Click:Connect(function()
