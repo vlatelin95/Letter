@@ -5,6 +5,13 @@ local Lighting = game:GetService("Lighting")
 
 local player = Players.LocalPlayer
 
+local music = Instance.new("Sound")
+music.Name = "MashaMusic"
+music.SoundId = "rbxassetid://120597449987191"
+music.Volume = 0.35
+music.Looped = true
+music.Parent = game:GetService("SoundService")
+
 local EFFECT_DURATION = 60
 local FIREWORK_INTERVAL = 1.2
 local HEART_INTERVAL = 0.22
@@ -1146,11 +1153,13 @@ local firstOpen = false
 
 local function openLetter()
 
-	letter.Visible = true
-	smallEnvelope.Visible = false
+    letter.Visible = true
+    smallEnvelope.Visible = false
 
-	letter.Size =
-		UDim2.new(0.74, 0, 0.50, 0)
+    music:Play()
+
+    letter.Size =
+        UDim2.new(0.74, 0, 0.50, 0)
 
 	letter.Position =
 		UDim2.new(0.13, 0, 0.25, 0)
