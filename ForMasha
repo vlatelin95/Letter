@@ -593,15 +593,15 @@ dividerHeart.ZIndex = 54
 local message = Instance.new("TextLabel")
 
 message.Size =
-	UDim2.new(0.80, 0, 0.38, 0)
+    UDim2.new(0.78, 0, 0.48, 0)
 
 message.Position =
-	UDim2.new(0.10, 0, 0.34, 0)
+    UDim2.new(0.11, 0, 0.31, 0)
 
 message.BackgroundTransparency = 1
 
 message.Text =
-	"Я люблю тебя, Маша.\n\nСпасибо тебе за всё ❤️"
+    "Каждый день, проведённый с тобой,\nя не перестаю улыбаться 🪽\n\nЯ постоянно смотрю в твои глаза,\nполные любви к тебе, Мария 🫀\n\nЯ замечаю каждую красоту в тебе 😳\nИ очень нуждаюсь в тебе 🤗\n\nСпасибо большое, что ты со мной 🔥\nИ спасибо, что подарила мне любовь ❤️\n\nЯ люблю тебя, Маша ❤️‍🔥💋"
 
 message.TextColor3 =
 	Color3.fromRGB(75, 45, 57)
