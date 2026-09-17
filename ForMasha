@@ -1,0 +1,1417 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local Debris = game:GetService("Debris")
+local Lighting = game:GetService("Lighting")
+
+local player = Players.LocalPlayer
+
+local EFFECT_DURATION = 60
+local FIREWORK_INTERVAL = 1.2
+local HEART_INTERVAL = 0.22
+
+------------------------------------------------------------
+-- GUI
+------------------------------------------------------------
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "MashaRomanticScene"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.DisplayOrder = 999
+gui.Parent = player:WaitForChild("PlayerGui")
+
+------------------------------------------------------------
+-- ТЁМНАЯ АТМОСФЕРА
+------------------------------------------------------------
+
+local colorCorrection = Instance.new("ColorCorrectionEffect")
+colorCorrection.Name = "MashaDarkAtmosphere"
+colorCorrection.Brightness = -0.12
+colorCorrection.Contrast = 0.25
+colorCorrection.Saturation = -0.08
+colorCorrection.TintColor = Color3.fromRGB(190, 175, 205)
+colorCorrection.Parent = Lighting
+
+local bloom = Instance.new("BloomEffect")
+bloom.Name = "MashaBloom"
+bloom.Intensity = 0.65
+bloom.Size = 28
+bloom.Threshold = 1
+bloom.Parent = Lighting
+
+local atmosphere = Instance.new("Atmosphere")
+atmosphere.Name = "MashaAtmosphere"
+atmosphere.Density = 0.42
+atmosphere.Offset = 0.15
+atmosphere.Color = Color3.fromRGB(70, 65, 90)
+atmosphere.Decay = Color3.fromRGB(20, 15, 35)
+atmosphere.Glare = 0.08
+atmosphere.Haze = 1.2
+atmosphere.Parent = Lighting
+
+Lighting.ClockTime = 23.5
+Lighting.Brightness = 0.55
+Lighting.ExposureCompensation = -0.35
+
+------------------------------------------------------------
+-- ЗВЁЗДЫ
+------------------------------------------------------------
+
+local starLayer = Instance.new("Frame")
+starLayer.Size = UDim2.fromScale(1, 1)
+starLayer.BackgroundTransparency = 1
+starLayer.Visible = false
+starLayer.ZIndex = 1
+starLayer.Parent = gui
+
+local function createStar()
+
+	local star = Instance.new("TextLabel")
+
+	local size = math.random(2, 7)
+
+	star.Size = UDim2.new(0, size, 0, size)
+
+	star.Position = UDim2.new(
+		math.random(2, 98) / 100,
+		0,
+		math.random(2, 90) / 100,
+		0
+	)
+
+	star.BackgroundTransparency = 1
+	star.Text = "•"
+
+	star.TextColor3 = Color3.fromRGB(
+		math.random(190, 255),
+		math.random(190, 240),
+		255
+	)
+
+	star.TextScaled = true
+	star.TextTransparency = math.random(20, 60) / 100
+
+	star.Parent = starLayer
+
+	TweenService:Create(
+		star,
+		TweenInfo.new(
+			math.random(15, 30) / 10,
+			Enum.EasingStyle.Sine,
+			Enum.EasingDirection.InOut,
+			-1,
+			true
+		),
+		{
+			TextTransparency = 0.85
+		}
+	):Play()
+
+end
+
+for i = 1, 80 do
+	createStar()
+end
+
+------------------------------------------------------------
+-- ВИНИГРЕТ
+------------------------------------------------------------
+
+local vignette = Instance.new("Frame")
+vignette.Size = UDim2.fromScale(1, 1)
+vignette.BackgroundTransparency = 1
+vignette.Visible = false
+vignette.ZIndex = 2
+vignette.Parent = gui
+
+local topShade = Instance.new("Frame")
+topShade.Size = UDim2.new(1, 0, 0.25, 0)
+topShade.BackgroundColor3 = Color3.fromRGB(0, 0, 10)
+topShade.BackgroundTransparency = 0.35
+topShade.BorderSizePixel = 0
+topShade.Parent = vignette
+
+local bottomShade = Instance.new("Frame")
+bottomShade.Size = UDim2.new(1, 0, 0.25, 0)
+bottomShade.Position = UDim2.new(0, 0, 0.75, 0)
+bottomShade.BackgroundColor3 = Color3.fromRGB(0, 0, 10)
+bottomShade.BackgroundTransparency = 0.35
+bottomShade.BorderSizePixel = 0
+bottomShade.Parent = vignette
+
+------------------------------------------------------------
+-- ТЁМНЫЙ ЭКРАН
+------------------------------------------------------------
+
+local darkness = Instance.new("Frame")
+darkness.Size = UDim2.fromScale(1, 1)
+darkness.BackgroundColor3 = Color3.fromRGB(2, 2, 8)
+darkness.BorderSizePixel = 0
+darkness.ZIndex = 200
+darkness.Parent = gui
+
+------------------------------------------------------------
+-- ВСТУПИТЕЛЬНАЯ НАДПИСЬ
+------------------------------------------------------------
+
+local intro = Instance.new("TextLabel")
+
+intro.Size = UDim2.new(0.9, 0, 0.16, 0)
+intro.Position = UDim2.new(0.05, 0, 0.40, 0)
+
+intro.BackgroundTransparency = 1
+intro.Text = "Для тебя, Маша"
+
+intro.TextColor3 = Color3.fromRGB(255, 225, 242)
+intro.TextTransparency = 1
+
+intro.TextScaled = true
+intro.Font = Enum.Font.GothamBold
+
+intro.ZIndex = 201
+intro.Parent = gui
+
+------------------------------------------------------------
+-- ЛИНИЯ
+------------------------------------------------------------
+
+local introLine = Instance.new("Frame")
+
+introLine.Size = UDim2.new(0, 0, 0, 2)
+introLine.Position = UDim2.new(0.5, 0, 0.58, 0)
+introLine.AnchorPoint = Vector2.new(0.5, 0.5)
+
+introLine.BackgroundColor3 =
+	Color3.fromRGB(255, 130, 180)
+
+introLine.BorderSizePixel = 0
+introLine.ZIndex = 201
+introLine.Parent = gui
+
+------------------------------------------------------------
+-- ГЛЯНЦЕВОЕ СЕРДЦЕ
+------------------------------------------------------------
+
+local function createGlossyHeart(parent, size)
+
+	local container = Instance.new("Frame")
+
+	container.Size = UDim2.new(0, size, 0, size)
+	container.BackgroundTransparency = 1
+	container.Parent = parent
+
+	local glow = Instance.new("TextLabel")
+
+	glow.Size = UDim2.new(1.15, 0, 1.15, 0)
+	glow.Position = UDim2.new(-0.075, 0, -0.075, 0)
+
+	glow.BackgroundTransparency = 1
+	glow.Text = "♥"
+	glow.TextScaled = true
+	glow.Font = Enum.Font.GothamBlack
+
+	glow.TextColor3 =
+		Color3.fromRGB(255, 70, 120)
+
+	glow.TextTransparency = 0.72
+	glow.ZIndex = 1
+	glow.Parent = container
+
+	local heart = Instance.new("TextLabel")
+
+	heart.Size = UDim2.fromScale(1, 1)
+
+	heart.BackgroundTransparency = 1
+	heart.Text = "♥"
+	heart.TextScaled = true
+	heart.Font = Enum.Font.GothamBlack
+
+	heart.TextColor3 =
+		Color3.fromRGB(235, 35, 75)
+
+	heart.ZIndex = 2
+	heart.Parent = container
+
+	local shine = Instance.new("TextLabel")
+
+	shine.Size = UDim2.new(0.28, 0, 0.20, 0)
+	shine.Position = UDim2.new(0.27, 0, 0.17, 0)
+
+	shine.BackgroundTransparency = 1
+	shine.Text = "●"
+	shine.TextScaled = true
+	shine.Font = Enum.Font.GothamBold
+
+	shine.TextColor3 =
+		Color3.fromRGB(255, 210, 220)
+
+	shine.TextTransparency = 0.12
+	shine.Rotation = -25
+	shine.ZIndex = 3
+	shine.Parent = container
+
+	local tinyShine = Instance.new("TextLabel")
+
+	tinyShine.Size = UDim2.new(0.10, 0, 0.08, 0)
+	tinyShine.Position = UDim2.new(0.58, 0, 0.28, 0)
+
+	tinyShine.BackgroundTransparency = 1
+	tinyShine.Text = "•"
+	tinyShine.TextScaled = true
+
+	tinyShine.TextColor3 =
+		Color3.fromRGB(255, 245, 250)
+
+	tinyShine.ZIndex = 4
+	tinyShine.Parent = container
+
+	return container
+
+end
+
+------------------------------------------------------------
+-- БОЛЬШОЕ СЕРДЦЕ
+------------------------------------------------------------
+
+local mainHeart = createGlossyHeart(gui, 95)
+
+mainHeart.AnchorPoint = Vector2.new(0.5, 0.5)
+
+mainHeart.Position = UDim2.new(
+	0.5, 0,
+	0.52, 0
+)
+
+mainHeart.Visible = false
+mainHeart.ZIndex = 202
+
+local function startHeartPulse()
+
+	task.spawn(function()
+
+		while mainHeart.Visible do
+
+			local grow = TweenService:Create(
+				mainHeart,
+				TweenInfo.new(
+					0.8,
+					Enum.EasingStyle.Sine,
+					Enum.EasingDirection.InOut
+				),
+				{
+					Size = UDim2.new(0, 108, 0, 108)
+				}
+			)
+
+			grow:Play()
+			grow.Completed:Wait()
+
+			local shrink = TweenService:Create(
+				mainHeart,
+				TweenInfo.new(
+					0.8,
+					Enum.EasingStyle.Sine,
+					Enum.EasingDirection.InOut
+				),
+				{
+					Size = UDim2.new(0, 95, 0, 95)
+				}
+			)
+
+			shrink:Play()
+			shrink.Completed:Wait()
+
+		end
+
+	end)
+
+end
+
+------------------------------------------------------------
+-- БОЛЬШОЙ КОНВЕРТ
+------------------------------------------------------------
+
+local bigEnvelope = Instance.new("TextButton")
+
+bigEnvelope.Size = UDim2.new(0, 220, 0, 135)
+bigEnvelope.Position =
+	UDim2.new(0.5, -110, 0.52, -67)
+
+bigEnvelope.BackgroundColor3 =
+	Color3.fromRGB(255, 238, 246)
+
+bigEnvelope.Text = "✉"
+bigEnvelope.TextColor3 =
+	Color3.fromRGB(210, 50, 90)
+
+bigEnvelope.TextSize = 85
+bigEnvelope.TextTransparency = 1
+bigEnvelope.Visible = false
+
+bigEnvelope.ZIndex = 20
+bigEnvelope.Parent = gui
+
+local envelopeCorner = Instance.new("UICorner")
+envelopeCorner.CornerRadius = UDim.new(0, 28)
+envelopeCorner.Parent = bigEnvelope
+
+local envelopeStroke = Instance.new("UIStroke")
+envelopeStroke.Thickness = 2
+envelopeStroke.Color =
+	Color3.fromRGB(255, 160, 195)
+
+envelopeStroke.Transparency = 0.2
+envelopeStroke.Parent = bigEnvelope
+
+------------------------------------------------------------
+-- ПОДСКАЗКА
+------------------------------------------------------------
+
+local hint = Instance.new("TextLabel")
+
+hint.Size = UDim2.new(0.8, 0, 0.07, 0)
+hint.Position = UDim2.new(0.1, 0, 0.69, 0)
+
+hint.BackgroundTransparency = 1
+hint.Text = "Открой письмо ❤️"
+
+hint.TextColor3 =
+	Color3.fromRGB(255, 220, 235)
+
+hint.TextTransparency = 1
+hint.TextScaled = true
+hint.Font = Enum.Font.GothamMedium
+
+hint.Visible = false
+hint.ZIndex = 20
+hint.Parent = gui
+
+------------------------------------------------------------
+-- МАЛЕНЬКАЯ КНОПКА
+------------------------------------------------------------
+
+local smallEnvelope = Instance.new("TextButton")
+
+smallEnvelope.Size = UDim2.new(0, 70, 0, 70)
+
+smallEnvelope.Position =
+	UDim2.new(0, 20, 1, -90)
+
+smallEnvelope.BackgroundColor3 =
+	Color3.fromRGB(255, 235, 244)
+
+smallEnvelope.Text = "✉"
+
+smallEnvelope.TextColor3 =
+	Color3.fromRGB(210, 50, 90)
+
+smallEnvelope.TextSize = 42
+smallEnvelope.Visible = false
+
+smallEnvelope.ZIndex = 30
+smallEnvelope.Parent = gui
+
+local smallCorner = Instance.new("UICorner")
+smallCorner.CornerRadius = UDim.new(1, 0)
+smallCorner.Parent = smallEnvelope
+
+local smallStroke = Instance.new("UIStroke")
+smallStroke.Thickness = 2
+smallStroke.Color =
+	Color3.fromRGB(255, 160, 195)
+
+smallStroke.Parent = smallEnvelope
+
+------------------------------------------------------------
+-- ПИСЬМО
+------------------------------------------------------------
+
+local letter = Instance.new("Frame")
+
+letter.Size = UDim2.new(0.84, 0, 0.62, 0)
+letter.Position = UDim2.new(0.08, 0, 0.19, 0)
+
+letter.BackgroundColor3 =
+	Color3.fromRGB(255, 248, 239)
+
+letter.Visible = false
+letter.ZIndex = 50
+letter.Parent = gui
+
+local letterCorner = Instance.new("UICorner")
+letterCorner.CornerRadius = UDim.new(0, 30)
+letterCorner.Parent = letter
+
+------------------------------------------------------------
+-- РАМКА
+------------------------------------------------------------
+
+local letterStroke = Instance.new("UIStroke")
+
+letterStroke.Thickness = 3
+
+letterStroke.Color =
+	Color3.fromRGB(224, 125, 155)
+
+letterStroke.Transparency = 0.15
+
+letterStroke.Parent = letter
+
+------------------------------------------------------------
+-- ВНУТРЕННЯЯ РАМКА
+------------------------------------------------------------
+
+local innerFrame = Instance.new("Frame")
+
+innerFrame.Size =
+	UDim2.new(1, -22, 1, -22)
+
+innerFrame.Position =
+	UDim2.new(0, 11, 0, 11)
+
+innerFrame.BackgroundTransparency = 1
+innerFrame.ZIndex = 51
+innerFrame.Parent = letter
+
+local innerStroke = Instance.new("UIStroke")
+
+innerStroke.Thickness = 1
+
+innerStroke.Color =
+	Color3.fromRGB(225, 155, 175)
+
+innerStroke.Transparency = 0.25
+
+innerStroke.Parent = innerFrame
+
+local innerCorner = Instance.new("UICorner")
+innerCorner.CornerRadius = UDim.new(0, 23)
+innerCorner.Parent = innerFrame
+
+------------------------------------------------------------
+-- СЕРДЦА ПО УГЛАМ
+------------------------------------------------------------
+
+local function addCornerHeart(x, y)
+
+	local h = createGlossyHeart(letter, 28)
+
+	h.Position = UDim2.new(x, 0, y, 0)
+	h.ZIndex = 53
+
+end
+
+addCornerHeart(0.035, 0.04)
+addCornerHeart(0.91, 0.04)
+addCornerHeart(0.035, 0.88)
+addCornerHeart(0.91, 0.88)
+
+------------------------------------------------------------
+-- ВЕРХНЯЯ ДЕКОРАЦИЯ
+------------------------------------------------------------
+
+local decoration = Instance.new("TextLabel")
+
+decoration.Size =
+	UDim2.new(0.8, 0, 0.08, 0)
+
+decoration.Position =
+	UDim2.new(0.1, 0, 0.015, 0)
+
+decoration.BackgroundTransparency = 1
+
+decoration.Text =
+	"✦  ♥  ✦  ♥  ✦"
+
+decoration.TextColor3 =
+	Color3.fromRGB(210, 70, 110)
+
+decoration.TextScaled = true
+decoration.Font = Enum.Font.GothamBold
+
+decoration.ZIndex = 52
+decoration.Parent = letter
+
+------------------------------------------------------------
+-- ЗАГОЛОВОК
+------------------------------------------------------------
+
+local title = Instance.new("TextLabel")
+
+title.Size =
+	UDim2.new(0.72, 0, 0.16, 0)
+
+title.Position =
+	UDim2.new(0.14, 0, 0.10, 0)
+
+title.BackgroundTransparency = 1
+
+title.Text =
+	"Для тебя, Маша ❤️"
+
+title.TextColor3 =
+	Color3.fromRGB(105, 42, 66)
+
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
+
+title.ZIndex = 53
+title.Parent = letter
+
+------------------------------------------------------------
+-- РАЗДЕЛИТЕЛЬ
+------------------------------------------------------------
+
+local divider = Instance.new("Frame")
+
+divider.Size =
+	UDim2.new(0.65, 0, 0, 2)
+
+divider.Position =
+	UDim2.new(0.175, 0, 0.285, 0)
+
+divider.BackgroundColor3 =
+	Color3.fromRGB(215, 120, 150)
+
+divider.BorderSizePixel = 0
+
+divider.ZIndex = 53
+divider.Parent = letter
+
+local dividerHeart =
+	createGlossyHeart(letter, 25)
+
+dividerHeart.Position =
+	UDim2.new(0.475, 0, 0.245, 0)
+
+dividerHeart.ZIndex = 54
+
+------------------------------------------------------------
+-- ГЛАВНЫЙ ТЕКСТ
+------------------------------------------------------------
+
+local message = Instance.new("TextLabel")
+
+message.Size =
+	UDim2.new(0.80, 0, 0.38, 0)
+
+message.Position =
+	UDim2.new(0.10, 0, 0.34, 0)
+
+message.BackgroundTransparency = 1
+
+message.Text =
+	"Я люблю тебя, Маша.\n\nСпасибо тебе за всё ❤️"
+
+message.TextColor3 =
+	Color3.fromRGB(75, 45, 57)
+
+message.TextScaled = true
+message.TextWrapped = true
+message.Font = Enum.Font.Gotham
+
+message.ZIndex = 53
+message.Parent = letter
+
+------------------------------------------------------------
+-- НИЖНЯЯ ФРАЗА
+------------------------------------------------------------
+
+local bottomText = Instance.new("TextLabel")
+
+bottomText.Size =
+	UDim2.new(0.75, 0, 0.09, 0)
+
+bottomText.Position =
+	UDim2.new(0.125, 0, 0.82, 0)
+
+bottomText.BackgroundTransparency = 1
+
+bottomText.Text =
+	"♥  Навсегда в моём сердце  ♥"
+
+bottomText.TextColor3 =
+	Color3.fromRGB(150, 70, 95)
+
+bottomText.TextScaled = true
+bottomText.Font = Enum.Font.GothamMedium
+
+bottomText.ZIndex = 53
+bottomText.Parent = letter
+
+------------------------------------------------------------
+-- КНОПКА ЗАКРЫТИЯ
+------------------------------------------------------------
+
+local close = Instance.new("TextButton")
+
+close.Size =
+	UDim2.new(0, 48, 0, 48)
+
+close.Position =
+	UDim2.new(1, -60, 0, 12)
+
+close.BackgroundColor3 =
+	Color3.fromRGB(238, 195, 208)
+
+close.Text = "×"
+
+close.TextColor3 =
+	Color3.fromRGB(105, 45, 65)
+
+close.TextScaled = true
+close.Font = Enum.Font.GothamBold
+
+close.ZIndex = 60
+close.Parent = letter
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(1, 0)
+closeCorner.Parent = close
+
+------------------------------------------------------------
+-- 3D СЕРДЦА
+------------------------------------------------------------
+
+local function createWorldHeart(position)
+
+	local part = Instance.new("Part")
+
+	part.Size = Vector3.new(0.2, 0.2, 0.2)
+	part.Position = position
+
+	part.Anchored = true
+	part.CanCollide = false
+	part.CanTouch = false
+	part.CanQuery = false
+
+	part.Transparency = 1
+	part.Parent = workspace
+
+	local billboard = Instance.new("BillboardGui")
+
+	billboard.Size =
+		UDim2.new(0, 70, 0, 70)
+
+	billboard.AlwaysOnTop = true
+	billboard.LightInfluence = 0
+	billboard.Parent = part
+
+	local heart =
+		createGlossyHeart(billboard, 62)
+
+	heart.AnchorPoint =
+		Vector2.new(0.5, 0.5)
+
+	heart.Position =
+		UDim2.fromScale(0.5, 0.5)
+
+	--------------------------------------------------------
+	-- ПЛАМЯ
+	--------------------------------------------------------
+
+	local flame =
+		Instance.new("ParticleEmitter")
+
+	flame.Texture =
+		"rbxasset://textures/particles/fire_main.dds"
+
+	flame.Rate = 25
+
+	flame.Lifetime =
+		NumberRange.new(0.25, 0.55)
+
+	flame.Speed =
+		NumberRange.new(0.5, 2)
+
+	flame.SpreadAngle =
+		Vector2.new(360, 360)
+
+	flame.LightEmission = 1
+	flame.LightInfluence = 0
+
+	flame.Size = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.45),
+		NumberSequenceKeypoint.new(0.5, 0.25),
+		NumberSequenceKeypoint.new(1, 0)
+	})
+
+	flame.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.1),
+		NumberSequenceKeypoint.new(0.7, 0.4),
+		NumberSequenceKeypoint.new(1, 1)
+	})
+
+	flame.Parent = part
+
+	--------------------------------------------------------
+	-- СВЕЧЕНИЕ
+	--------------------------------------------------------
+
+	local light =
+		Instance.new("PointLight")
+
+	light.Color =
+		Color3.fromRGB(255, 70, 120)
+
+	light.Brightness = 1.5
+	light.Range = 8
+	light.Parent = part
+
+	--------------------------------------------------------
+	-- ПОЛЁТ
+	--------------------------------------------------------
+
+	local target =
+		position +
+		Vector3.new(
+			math.random(-9, 9),
+			math.random(5, 13),
+			math.random(-9, 9)
+		)
+
+	TweenService:Create(
+		part,
+
+		TweenInfo.new(
+			math.random(25, 40) / 10,
+			Enum.EasingStyle.Sine,
+			Enum.EasingDirection.Out
+		),
+
+		{
+			Position = target
+		}
+
+	):Play()
+
+	--------------------------------------------------------
+	-- ИСЧЕЗНОВЕНИЕ
+	--------------------------------------------------------
+
+	task.delay(2.4, function()
+
+		flame.Enabled = false
+
+		for _, object in ipairs(
+			heart:GetDescendants()
+		) do
+
+			if object:IsA("TextLabel") then
+
+				TweenService:Create(
+					object,
+					TweenInfo.new(0.7),
+					{
+						TextTransparency = 1
+					}
+				):Play()
+
+			end
+
+		end
+
+		TweenService:Create(
+			light,
+			TweenInfo.new(0.7),
+			{
+				Brightness = 0
+			}
+		):Play()
+
+	end)
+
+	Debris:AddItem(part, 3.5)
+
+end
+
+------------------------------------------------------------
+-- ФЕЙЕРВЕРК
+------------------------------------------------------------
+
+local function createFirework(position)
+
+	local rocket = Instance.new("Part")
+
+	rocket.Size =
+		Vector3.new(0.35, 0.35, 0.35)
+
+	rocket.Position = position
+
+	rocket.Anchored = true
+	rocket.CanCollide = false
+	rocket.CanTouch = false
+	rocket.CanQuery = false
+
+	rocket.Shape = Enum.PartType.Ball
+	rocket.Material = Enum.Material.Neon
+
+	rocket.Color =
+		Color3.fromRGB(255, 220, 240)
+
+	rocket.Parent = workspace
+
+	--------------------------------------------------------
+	-- ХВОСТ
+	--------------------------------------------------------
+
+	local trail =
+		Instance.new("ParticleEmitter")
+
+	trail.Texture =
+		"rbxasset://textures/particles/sparkles_main.dds"
+
+	trail.Rate = 35
+
+	trail.Lifetime =
+		NumberRange.new(0.25, 0.5)
+
+	trail.Speed =
+		NumberRange.new(1, 3)
+
+	trail.SpreadAngle =
+		Vector2.new(15, 15)
+
+	trail.LightEmission = 1
+
+	trail.Size = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.3),
+		NumberSequenceKeypoint.new(1, 0)
+	})
+
+	trail.Parent = rocket
+
+	--------------------------------------------------------
+	-- ПОЛЁТ
+	--------------------------------------------------------
+
+	local target =
+		position +
+		Vector3.new(
+			math.random(-5, 5),
+			math.random(22, 32),
+			math.random(-5, 5)
+		)
+
+	local flight = TweenService:Create(
+		rocket,
+
+		TweenInfo.new(
+			1.1,
+			Enum.EasingStyle.Quad,
+			Enum.EasingDirection.Out
+		),
+
+		{
+			Position = target
+		}
+	)
+
+	flight:Play()
+
+	flight.Completed:Connect(function()
+
+		if not rocket.Parent then
+			return
+		end
+
+		----------------------------------------------------
+		-- ВЗРЫВ
+		----------------------------------------------------
+
+		local explosion =
+			Instance.new("Part")
+
+		explosion.Size =
+			Vector3.new(1, 1, 1)
+
+		explosion.Position =
+			rocket.Position
+
+		explosion.Anchored = true
+		explosion.CanCollide = false
+		explosion.CanTouch = false
+		explosion.CanQuery = false
+
+		explosion.Transparency = 1
+		explosion.Parent = workspace
+
+		----------------------------------------------------
+		-- ВСПЫШКА
+		----------------------------------------------------
+
+		local light =
+			Instance.new("PointLight")
+
+		light.Brightness = 20
+		light.Range = 45
+
+		light.Color =
+			Color3.fromRGB(
+				math.random(180, 255),
+				math.random(80, 220),
+				math.random(150, 255)
+			)
+
+		light.Parent = explosion
+
+		----------------------------------------------------
+		-- ИСКРЫ
+		----------------------------------------------------
+
+		local particles =
+			Instance.new("ParticleEmitter")
+
+		particles.Texture =
+			"rbxasset://textures/particles/sparkles_main.dds"
+
+		particles.Rate = 0
+
+		particles.Lifetime =
+			NumberRange.new(1.4, 2.4)
+
+		particles.Speed =
+			NumberRange.new(18, 34)
+
+		particles.SpreadAngle =
+			Vector2.new(360, 360)
+
+		particles.LightEmission = 1
+		particles.LightInfluence = 0
+
+		particles.Size = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0.7),
+			NumberSequenceKeypoint.new(0.4, 0.4),
+			NumberSequenceKeypoint.new(1, 0)
+		})
+
+		particles.Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0),
+			NumberSequenceKeypoint.new(0.75, 0.3),
+			NumberSequenceKeypoint.new(1, 1)
+		})
+
+		local color1 =
+			Color3.fromRGB(
+				math.random(200, 255),
+				math.random(60, 150),
+				math.random(120, 255)
+			)
+
+		local color2 =
+			Color3.fromRGB(
+				255,
+				math.random(150, 240),
+				math.random(180, 255)
+			)
+
+		particles.Color =
+			ColorSequence.new(color1, color2)
+
+		particles.Parent = explosion
+
+		particles:Emit(160)
+
+		----------------------------------------------------
+		-- ИСЧЕЗНОВЕНИЕ
+		----------------------------------------------------
+
+		TweenService:Create(
+			light,
+
+			TweenInfo.new(0.8),
+
+			{
+				Brightness = 0,
+				Range = 5
+			}
+
+		):Play()
+
+		Debris:AddItem(explosion, 3)
+		Debris:AddItem(rocket, 0.1)
+
+	end)
+
+end
+
+------------------------------------------------------------
+-- ЗАПУСК ЭФФЕКТОВ
+------------------------------------------------------------
+
+local effectsStarted = false
+
+local function startEffects()
+
+	if effectsStarted then
+		return
+	end
+
+	effectsStarted = true
+
+	local startTime = os.clock()
+
+	--------------------------------------------------------
+	-- ФЕЙЕРВЕРКИ
+	--------------------------------------------------------
+
+	task.spawn(function()
+
+		while
+			os.clock() - startTime
+			< EFFECT_DURATION
+		do
+
+			local character =
+				player.Character
+
+			if character then
+
+				local root =
+					character:FindFirstChild(
+						"HumanoidRootPart"
+					)
+
+				if root then
+
+					local position =
+						root.Position +
+						Vector3.new(
+							math.random(-45, 45),
+							0,
+							math.random(-45, 45)
+						)
+
+					createFirework(position)
+
+				end
+
+			end
+
+			task.wait(FIREWORK_INTERVAL)
+
+		end
+
+	end)
+
+	--------------------------------------------------------
+	-- СЕРДЦА
+	--------------------------------------------------------
+
+	task.spawn(function()
+
+		while
+			os.clock() - startTime
+			< EFFECT_DURATION
+		do
+
+			local character =
+				player.Character
+
+			if character then
+
+				local root =
+					character:FindFirstChild(
+						"HumanoidRootPart"
+					)
+
+				if root then
+
+					local position =
+						root.Position +
+						Vector3.new(
+							math.random(-13, 13),
+							math.random(1, 9),
+							math.random(-13, 13)
+						)
+
+					createWorldHeart(position)
+
+				end
+
+			end
+
+			task.wait(HEART_INTERVAL)
+
+		end
+
+	end)
+
+end
+
+------------------------------------------------------------
+-- ОТКРЫТИЕ ПИСЬМА
+------------------------------------------------------------
+
+local firstOpen = false
+
+local function openLetter()
+
+	letter.Visible = true
+	smallEnvelope.Visible = false
+
+	letter.Size =
+		UDim2.new(0.74, 0, 0.50, 0)
+
+	letter.Position =
+		UDim2.new(0.13, 0, 0.25, 0)
+
+	TweenService:Create(
+		letter,
+
+		TweenInfo.new(
+			0.7,
+			Enum.EasingStyle.Back,
+			Enum.EasingDirection.Out
+		),
+
+		{
+			Size =
+				UDim2.new(0.84, 0, 0.62, 0),
+
+			Position =
+				UDim2.new(0.08, 0, 0.19, 0)
+		}
+
+	):Play()
+
+	if not firstOpen then
+
+		firstOpen = true
+		startEffects()
+
+	end
+
+end
+
+------------------------------------------------------------
+-- ЗАКРЫТЬ
+------------------------------------------------------------
+
+close.MouseButton1Click:Connect(function()
+
+	letter.Visible = false
+	smallEnvelope.Visible = true
+
+end)
+
+------------------------------------------------------------
+-- БОЛЬШОЙ КОНВЕРТ
+------------------------------------------------------------
+
+bigEnvelope.MouseButton1Click:Connect(function()
+
+	bigEnvelope.Visible = false
+	hint.Visible = false
+
+	openLetter()
+
+end)
+
+------------------------------------------------------------
+-- МАЛЕНЬКИЙ КОНВЕРТ
+------------------------------------------------------------
+
+smallEnvelope.MouseButton1Click:Connect(function()
+
+	openLetter()
+
+end)
+
+------------------------------------------------------------
+-- ВСТУПИТЕЛЬНАЯ СЦЕНА
+------------------------------------------------------------
+
+task.spawn(function()
+
+	task.wait(1)
+
+	starLayer.Visible = true
+	vignette.Visible = true
+
+	--------------------------------------------------------
+	-- НАДПИСЬ
+	--------------------------------------------------------
+
+	TweenService:Create(
+		intro,
+
+		TweenInfo.new(
+			2.5,
+			Enum.EasingStyle.Sine
+		),
+
+		{
+			TextTransparency = 0
+		}
+
+	):Play()
+
+	--------------------------------------------------------
+	-- ЛИНИЯ
+	--------------------------------------------------------
+
+	TweenService:Create(
+		introLine,
+
+		TweenInfo.new(
+			1.8,
+			Enum.EasingStyle.Sine
+		),
+
+		{
+			Size =
+				UDim2.new(0.35, 0, 0, 2)
+		}
+
+	):Play()
+
+	task.wait(3.5)
+
+	--------------------------------------------------------
+	-- СЕРДЦЕ
+	--------------------------------------------------------
+
+	mainHeart.Visible = true
+
+	mainHeart.Size =
+		UDim2.new(0, 0, 0, 0)
+
+	TweenService:Create(
+		mainHeart,
+
+		TweenInfo.new(
+			1.2,
+			Enum.EasingStyle.Back,
+			Enum.EasingDirection.Out
+		),
+
+		{
+			Size =
+				UDim2.new(0, 95, 0, 95)
+		}
+
+	):Play()
+
+	startHeartPulse()
+
+	task.wait(2)
+
+	--------------------------------------------------------
+	-- УБИРАЕМ ЗАСТАВКУ
+	--------------------------------------------------------
+
+	TweenService:Create(
+		intro,
+
+		TweenInfo.new(1.2),
+
+		{
+			TextTransparency = 1
+		}
+
+	):Play()
+
+	TweenService:Create(
+		introLine,
+
+		TweenInfo.new(1),
+
+		{
+			Size =
+				UDim2.new(0, 0, 0, 2)
+		}
+
+	):Play()
+
+	TweenService:Create(
+		mainHeart,
+
+		TweenInfo.new(1),
+
+		{
+			Size =
+				UDim2.new(0, 0, 0, 0)
+		}
+
+	):Play()
+
+	task.wait(1.2)
+
+	mainHeart.Visible = false
+	intro.Visible = false
+
+	--------------------------------------------------------
+	-- ПОКАЗ КОНВЕРТА
+	--------------------------------------------------------
+
+	bigEnvelope.Visible = true
+
+	bigEnvelope.Size =
+		UDim2.new(0, 0, 0, 0)
+
+	TweenService:Create(
+		bigEnvelope,
+
+		TweenInfo.new(
+			1.2,
+			Enum.EasingStyle.Back,
+			Enum.EasingDirection.Out
+		),
+
+		{
+			Size =
+				UDim2.new(0, 220, 0, 135)
+		}
+
+	):Play()
+
+	TweenService:Create(
+		bigEnvelope,
+
+		TweenInfo.new(1.2),
+
+		{
+			TextTransparency = 0
+		}
+
+	):Play()
+
+	task.wait(0.7)
+
+	hint.Visible = true
+
+	TweenService:Create(
+		hint,
+
+		TweenInfo.new(1.2),
+
+		{
+			TextTransparency = 0
+		}
+
+	):Play()
+
+	--------------------------------------------------------
+	-- ПЛАВНО УБИРАЕМ ТЕМНОТУ
+	--------------------------------------------------------
+
+	TweenService:Create(
+		darkness,
+
+		TweenInfo.new(
+			2.5,
+			Enum.EasingStyle.Sine
+		),
+
+		{
+			BackgroundTransparency = 1
+		}
+
+	):Play()
+
+	task.wait(2.5)
+
+	darkness.Visible = false
+
+end)
